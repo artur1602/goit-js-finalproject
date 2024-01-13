@@ -1,66 +1,55 @@
 import { galleryItems } from './gallery-items.js';
 
-// Change code below this line
+const container = document.querySelector('.gallery');
 
-const instance = basicLightbox.create('', {
-  onShow: () => {
-    document.onkeydown = event => {
-      if (event.key === 'Escape') {
-        instance.close();
-      }
-    };
-  },
-  onClose: () => {
-    document.onkeydown = undefined;
-  }
-});
+container.insertAdjacentHTML('beforeend', createMarkup(galleryItems));
+container.addEventListener('click', handlerImgClick);
 
-const modalElement = instance.element();
-
-const galleryRoot = document.querySelector('.gallery');
-
-function createGalleryItem(item) {
-  return `<li class="gallery__item">
-            <a class="gallery__link" href="${item.original}">
-             <img class="gallery__image" src="${item.preview}" alt="${item.description}" data-source="${item.original}" />
-           </a>
-          </li>`;
+function createMarkup(arr) {
+  return arr
+    .map(
+      ({ preview, original, description }) => `
+  <li class="gallery__item">
+  <a class="gallery__link" href="${original}">
+    <img
+      class="gallery__image"
+      src="${preview}"
+      data-source="${original}"
+      alt="${description}"
+    />
+  </a>
+</li>
+    `
+    )
+    .join('');
 }
 
-function createGallery() {
-  const galleryHtmlElements = galleryItems.map(item => createGalleryItem(item)).join('');
-
-  if (!galleryRoot) {
+function handlerImgClick(evt) {
+  if (evt.currentTarget === evt.target) {
     return;
   }
-
-  galleryRoot.insertAdjacentHTML('beforeend', galleryHtmlElements);
+  evt.preventDefault();
+  const instance = basicLightbox.create(
+    `<div class="modal">
+        <img src="${evt.target.dataset.source}" alt="${evt.target.alt}"/>
+          
+    </div>`,
+    {
+      handler: null,
+      onShow(instance) {
+        this.handler = onEscape.bind(instance);
+        document.addEventListener('keydown', this.handler);
+      },
+      onClose() {
+        document.removeEventListener('keydown', this.handler);
+      },
+    }
+  );
+  instance.show(() => {});
 }
 
-function createModalImage(url) {
-  return `<img src="${url}" width="800" height="600"/>`;
+function onEscape({ code }) {
+  if (code === 'Escape') {
+    this.close();
+  }
 }
-
-function bindEvents() {
-  galleryRoot.querySelectorAll('.gallery__link').forEach(item => {
-    item.addEventListener('click', event => {
-      event.preventDefault();
-
-      const imageUrl = event.currentTarget.querySelector('img')?.dataset.source;
-
-      if (!imageUrl) {
-        return;
-      }
-
-      modalElement.innerHTML = createModalImage(imageUrl);
-
-      instance.show();
-    });
-  });
-
-  modalElement.addEventListener('click', () => instance.close());
-}
-
-createGallery();
-
-bindEvents();

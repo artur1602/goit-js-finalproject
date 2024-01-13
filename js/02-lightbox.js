@@ -21,13 +21,6 @@ function createGallery() {
   galleryRoot.insertAdjacentHTML('beforeend', galleryHtmlElements);
 }
 
-function bindEvents() {
-  galleryRoot.querySelectorAll('.gallery__link').forEach(item => {
-    item.addEventListener('click', event => {
-      event.preventDefault();
-    });
-  });
-}
 
 function createLightBox() {
   return new SimpleLightbox('.gallery a', {
@@ -37,5 +30,4 @@ function createLightBox() {
 }
 
 createGallery();
-bindEvents();
 createLightBox();
